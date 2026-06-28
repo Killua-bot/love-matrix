@@ -5,165 +5,186 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>For You ❤️</title>
     <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-            background: black;
-            color: #00ff41;
-            font-family: 'Courier New', monospace;
-        }
-        canvas {
-            position: fixed;
-            top: 0; left: 0;
-            z-index: -1;
-        }
-        .content {
-            position: relative;
-            z-index: 2;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-        }
-        .big-count {
-            font-size: 9rem;
-            font-weight: bold;
-            padding: 20px 60px;
-            border: 4px solid #00ff41;
-            border-radius: 25px;
-            background: rgba(0, 20, 0, 0.8);
-            box-shadow: 0 0 60px #00ff41;
-            text-shadow: 0 0 40px #00ff41;
-            margin: 20px;
-            min-width: 200px;
-        }
-        h1 {
-            font-size: 3.8rem;
-            margin: 20px;
-            text-shadow: 0 0 30px #00ff41;
-            letter-spacing: 5px;
-        }
-        .message {
-            font-size: 2rem;
-            max-width: 700px;
-            margin-top: 40px;
-            text-shadow: 0 0 20px #00ff41;
-            opacity: 0;
-            transition: opacity 2.5s;
-        }
-        .heart {
-            position: absolute;
-            font-size: 40px;
-            color: #ff1493;
-            pointer-events: none;
-            z-index: 3;
-            animation: fall linear forwards;
-        }
-        @keyframes fall {
-            to { transform: translateY(110vh); opacity: 0; }
-        }
+        body { margin:0; overflow:hidden; background:#000; }
+        canvas { display:block; }
     </style>
 </head>
 <body>
-    <canvas id="matrix"></canvas>
-    
-    <div class="content">
-        <h1>I LOVE YOU</h1>
-        <div class="big-count" id="countdown">3</div>
-        <div class="message" id="message">
-            You are the reason I smile every day.<br>
-            Thank you for being in my life! 💕
-        </div>
-    </div>
-
+    <canvas id="canvas"></canvas>
     <script>
-        // Matrix Rain
-        const canvas = document.getElementById('matrix');
+        const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
-        let width = canvas.width = window.innerWidth;
-        let height = canvas.height = window.innerHeight;
+        let w = canvas.width = window.innerWidth;
+        let h = canvas.height = window.innerHeight;
+        let particles = [];
+        let fallingItems = [];
 
-        const chars = "01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワンABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        const fontSize = 16;
-        let columns = Math.floor(width / fontSize);
-        let drops = Array(columns).fill(1);
+        const COLOR = '#ff1744';
 
-        function drawMatrix() {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.08)';
-            ctx.fillRect(0, 0, width, height);
-            ctx.fillStyle = '#00ff41';
-            ctx.font = `${fontSize}px monospace`;
-
-            for (let i = 0; i < drops.length; i++) {
-                const text = chars[Math.floor(Math.random() * chars.length)];
-                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-                
-                if (drops[i] * fontSize > height && Math.random() > 0.975) {
-                    drops[i] = 0;
-                }
-                drops[i]++;
+        class Dot {
+            constructor() {
+                this.x = Math.random() * w;
+                this.y = Math.random() * h;
+                this.targetX = this.x;
+                this.targetY = this.y;
+                this.size = 4.5;
+            }
+            update() {
+                this.x += (this.targetX - this.x) * 0.085;
+                this.y += (this.targetY - this.y) * 0.085;
+            }
+            draw() {
+                ctx.fillStyle = COLOR;
+                ctx.shadowBlur = 22;
+                ctx.shadowColor = COLOR;
+                ctx.fillRect(this.x, this.y, this.size, this.size);
             }
         }
-        setInterval(drawMatrix, 35);
 
-        // 3-2-1 Countdown
-        function startCountdown() {
-            const countEl = document.getElementById('countdown');
-            let count = 3;
-
-            const timer = setInterval(() => {
-                countEl.style.transition = 'all 0.4s';
-                countEl.style.transform = 'scale(1.15)';
+        class FallingItem {
+            constructor() {
+                this.reset();
+            }
+            reset() {
+                this.x = Math.random() * w;
+                this.y = Math.random() * -h - 50;
+                this.size = Math.random() * 22 + 18;
+                this.speed = Math.random() * 3.5 + 2.2;
+                this.swing = Math.random() * 0.8 + 0.4;
+                this.swingSpeed = Math.random() * 0.04 + 0.02;
+                this.angle = 0;
                 
-                setTimeout(() => {
-                    countEl.style.transform = 'scale(1)';
-                }, 200);
-
-                if (count > 0) {
-                    countEl.textContent = count;
-                    count--;
+                if (Math.random() < 0.65) {
+                    this.type = 'heart';
+                    this.char = '❤️';
                 } else {
-                    clearInterval(timer);
-                    countEl.style.fontSize = '6rem';
-                    countEl.textContent = "GO! ❤️";
-                    
-                    // Show message
-                    setTimeout(() => {
-                        document.getElementById('message').style.opacity = 1;
-                    }, 800);
+                    this.type = 'letter';
+                    const letters = ['I','L','O','V','E','U','Y','♥','♡'];
+                    this.char = letters[Math.floor(Math.random() * letters.length)];
                 }
-            }, 1200);
-        }
-
-        // Falling Hearts
-        function createHeart() {
-            const heart = document.createElement('div');
-            heart.className = 'heart';
-            heart.textContent = ['❤️','💖','💗','💘'][Math.floor(Math.random()*4)];
-            heart.style.left = Math.random() * 100 + 'vw';
-            heart.style.animationDuration = (Math.random() * 3 + 5) + 's';
-            heart.style.opacity = Math.random() * 0.6 + 0.7;
-            document.body.appendChild(heart);
-            setTimeout(() => heart.remove(), 9000);
-        }
-
-        // Initialize
-        window.onload = () => {
-            startCountdown();
-            setInterval(createHeart, 250);
-            for (let i = 0; i < 18; i++) {
-                setTimeout(createHeart, i * 80);
             }
+            update() {
+                this.y += this.speed;
+                this.angle += this.swingSpeed;
+                this.x += Math.sin(this.angle) * this.swing;
+                if (this.y > h + 50) this.reset();
+            }
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(Math.sin(this.angle) * 0.2);
+                ctx.font = `bold ${this.size}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.shadowBlur = 12;
+                ctx.shadowColor = COLOR;
+                ctx.fillStyle = this.type === 'heart' ? '#ff3366' : '#ff9999';
+                ctx.fillText(this.char, 0, 0);
+                ctx.restore();
+            }
+        }
+
+        function createBigHeart() {
+            particles = [];
+            const cx = w/2;
+            const cy = h/2 - 40;
+            const scale = Math.min(w, h) * 0.42;
+            
+            for (let i = 0; i < 3200; i++) {
+                const a = Math.random() * Math.PI * 2;
+                const r = scale;
+                const x = cx + r * (16 * Math.pow(Math.sin(a), 3)) / 17;
+                const y = cy - r * (13 * Math.cos(a) - 5 * Math.cos(2*a) - 2 * Math.cos(3*a) - Math.cos(4*a)) / 17;
+                
+                const d = new Dot();
+                d.targetX = x;
+                d.targetY = y;
+                particles.push(d);
+            }
+            
+            const temp = document.createElement('canvas');
+            const t = temp.getContext('2d');
+            temp.width = w; 
+            temp.height = h;
+            t.font = 'bold 78px Arial';
+            t.fillStyle = 'white';
+            t.textAlign = 'center';
+            t.textBaseline = 'middle';
+            t.fillText("I LOVE YOU", cx, cy + 48);
+            
+            const data = t.getImageData(0, 0, w, h).data;
+            for (let y = 0; y < h; y += 4) {
+                for (let x = 0; x < w; x += 4) {
+                    if (data[(y * w + x) * 4 + 3] > 100) {
+                        const d = new Dot();
+                        d.targetX = x;
+                        d.targetY = y;
+                        particles.push(d);
+                    }
+                }
+            }
+        }
+
+        function createText(text, cx, cy, size = 180) {
+            const temp = document.createElement('canvas');
+            const t = temp.getContext('2d');
+            temp.width = w; 
+            temp.height = h;
+            t.font = `bold ${size}px Arial`;
+            t.fillStyle = COLOR;
+            t.textAlign = 'center';
+            t.textBaseline = 'middle';
+            t.fillText(text, cx, cy);
+            
+            const data = t.getImageData(0, 0, w, h).data;
+            particles = [];
+            for (let y = 0; y < h; y += 5) {
+                for (let x = 0; x < w; x += 5) {
+                    if (data[(y * w + x) * 4 + 3] > 120) {
+                        const d = new Dot();
+                        d.targetX = x;
+                        d.targetY = y;
+                        particles.push(d);
+                    }
+                }
+            }
+        }
+
+        function animate() {
+            // Pure black background - no trails
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, w, h);
+            
+            // Falling items
+            fallingItems.forEach(item => {
+                item.update();
+                item.draw();
+            });
+            
+            // Main heart
+            particles.forEach(p => { 
+                p.update(); 
+                p.draw(); 
+            });
+            
+            requestAnimationFrame(animate);
+        }
+
+        window.onload = () => {
+            for (let i = 0; i < 65; i++) {
+                fallingItems.push(new FallingItem());
+            }
+            
+            animate();
+            setTimeout(() => createText("3", w/2, h/2), 400);
+            setTimeout(() => createText("2", w/2, h/2), 2500);
+            setTimeout(() => createText("1", w/2, h/2), 4600);
+            setTimeout(() => createBigHeart(), 6700);
         };
 
-        // Resize
         window.addEventListener('resize', () => {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-            columns = Math.floor(width / fontSize);
-            drops = Array(columns).fill(1);
+            w = canvas.width = window.innerWidth;
+            h = canvas.height = window.innerHeight;
         });
     </script>
 </body>
