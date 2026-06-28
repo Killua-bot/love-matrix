@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Untuk Kamu ❤️</title>
+    <title>For You ❤️</title>
     <style>
         body {
             margin: 0;
@@ -26,41 +26,40 @@
             align-items: center;
             justify-content: center;
             text-align: center;
-            padding: 20px;
+        }
+        .big-count {
+            font-size: 9rem;
+            font-weight: bold;
+            padding: 20px 60px;
+            border: 4px solid #00ff41;
+            border-radius: 25px;
+            background: rgba(0, 20, 0, 0.8);
+            box-shadow: 0 0 60px #00ff41;
+            text-shadow: 0 0 40px #00ff41;
+            margin: 20px;
+            min-width: 200px;
         }
         h1 {
-            font-size: 4.5rem;
-            margin: 10px;
+            font-size: 3.8rem;
+            margin: 20px;
             text-shadow: 0 0 30px #00ff41;
-            letter-spacing: 4px;
-        }
-        .countdown {
-            font-size: 4.8rem;
-            font-weight: bold;
-            padding: 20px 40px;
-            border: 3px solid #00ff41;
-            border-radius: 20px;
-            background: rgba(0, 0, 0, 0.7);
-            box-shadow: 0 0 40px #00ff41;
-            margin: 30px 0;
-            text-shadow: 0 0 20px #00ff41;
+            letter-spacing: 5px;
         }
         .message {
-            font-size: 1.9rem;
-            max-width: 800px;
+            font-size: 2rem;
+            max-width: 700px;
             margin-top: 40px;
-            text-shadow: 0 0 15px #00ff41;
+            text-shadow: 0 0 20px #00ff41;
             opacity: 0;
-            transition: opacity 3s;
+            transition: opacity 2.5s;
         }
         .heart {
             position: absolute;
-            font-size: 35px;
+            font-size: 40px;
             color: #ff1493;
             pointer-events: none;
             z-index: 3;
             animation: fall linear forwards;
-            text-shadow: 0 0 15px #ff1493;
         }
         @keyframes fall {
             to { transform: translateY(110vh); opacity: 0; }
@@ -71,11 +70,11 @@
     <canvas id="matrix"></canvas>
     
     <div class="content">
-        <h1>AKU SAYANG KAMU</h1>
-        <div class="countdown" id="countdown">00 : 00 : 00 : 00</div>
+        <h1>I LOVE YOU</h1>
+        <div class="big-count" id="countdown">3</div>
         <div class="message" id="message">
-            Kamu adalah alasan aku tersenyum setiap hari.<br>
-            Terima kasih sudah ada di hidupku! 💕
+            You are the reason I smile every day.<br>
+            Thank you for being in my life! 💕
         </div>
     </div>
 
@@ -83,79 +82,88 @@
         // Matrix Rain
         const canvas = document.getElementById('matrix');
         const ctx = canvas.getContext('2d');
-        canvas.height = window.innerHeight;
-        canvas.width = window.innerWidth;
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
 
-        const chars = "01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const chars = "01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワンABCDEFGHIJKLMNOPQRSTUVWXYZ";
         const fontSize = 16;
-        let columns = canvas.width / fontSize;
-        let drops = Array(Math.floor(columns)).fill(1);
+        let columns = Math.floor(width / fontSize);
+        let drops = Array(columns).fill(1);
 
-        function draw() {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.07)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.08)';
+            ctx.fillRect(0, 0, width, height);
             ctx.fillStyle = '#00ff41';
             ctx.font = `${fontSize}px monospace`;
 
             for (let i = 0; i < drops.length; i++) {
                 const text = chars[Math.floor(Math.random() * chars.length)];
                 ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                
+                if (drops[i] * fontSize > height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
                 drops[i]++;
             }
         }
-        setInterval(draw, 35);
+        setInterval(drawMatrix, 35);
 
-        // Countdown (Change the target date!)
+        // 3-2-1 Countdown
         function startCountdown() {
-            const target = new Date("2026-07-15T00:00:00").getTime(); // ← CHANGE THIS DATE
-            const cd = document.getElementById('countdown');
+            const countEl = document.getElementById('countdown');
+            let count = 3;
 
-            setInterval(() => {
-                const now = new Date().getTime();
-                let distance = target - now;
+            const timer = setInterval(() => {
+                countEl.style.transition = 'all 0.4s';
+                countEl.style.transform = 'scale(1.15)';
+                
+                setTimeout(() => {
+                    countEl.style.transform = 'scale(1)';
+                }, 200);
 
-                if (distance < 0) {
-                    cd.innerHTML = "I LOVE YOU ❤️";
-                    return;
+                if (count > 0) {
+                    countEl.textContent = count;
+                    count--;
+                } else {
+                    clearInterval(timer);
+                    countEl.style.fontSize = '6rem';
+                    countEl.textContent = "GO! ❤️";
+                    
+                    // Show message
+                    setTimeout(() => {
+                        document.getElementById('message').style.opacity = 1;
+                    }, 800);
                 }
-
-                const days = Math.floor(distance / (1000*60*60*24));
-                const hours = Math.floor((distance % (1000*60*60*24)) / (1000*60*60));
-                const minutes = Math.floor((distance % (1000*60*60)) / (1000*60));
-                const seconds = Math.floor((distance % (1000*60)) / 1000);
-
-                cd.innerHTML = `${days} : ${hours.toString().padStart(2,'0')} : ${minutes.toString().padStart(2,'0')} : ${seconds.toString().padStart(2,'0')}`;
-            }, 1000);
+            }, 1200);
         }
 
         // Falling Hearts
         function createHeart() {
             const heart = document.createElement('div');
             heart.className = 'heart';
-            heart.textContent = '❤️';
+            heart.textContent = ['❤️','💖','💗','💘'][Math.floor(Math.random()*4)];
             heart.style.left = Math.random() * 100 + 'vw';
-            heart.style.animationDuration = Math.random() * 4 + 4 + 's';
-            heart.style.fontSize = Math.random() * 25 + 30 + 'px';
+            heart.style.animationDuration = (Math.random() * 3 + 5) + 's';
+            heart.style.opacity = Math.random() * 0.6 + 0.7;
             document.body.appendChild(heart);
-            setTimeout(() => heart.remove(), 10000);
+            setTimeout(() => heart.remove(), 9000);
         }
 
         // Initialize
         window.onload = () => {
             startCountdown();
-            setInterval(createHeart, 280);
-            for (let i = 0; i < 12; i++) setTimeout(createHeart, i * 150);
-            
-            // Show message after 4 seconds
-            setTimeout(() => {
-                document.getElementById('message').style.opacity = 1;
-            }, 4000);
+            setInterval(createHeart, 250);
+            for (let i = 0; i < 18; i++) {
+                setTimeout(createHeart, i * 80);
+            }
         };
 
+        // Resize
         window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            columns = Math.floor(width / fontSize);
+            drops = Array(columns).fill(1);
         });
     </script>
 </body>
